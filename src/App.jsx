@@ -112,13 +112,10 @@ export default function App() {
     history.push({ role: "user", content: text });
 
     try {
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
+      const res = await fetch("/api/chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-api-key": API_KEY,
-          "anthropic-version": "2023-06-01",
-          "anthropic-dangerous-request-bypass": "true",
         },
         body: JSON.stringify({
           model: "claude-haiku-4-5-20251001",
