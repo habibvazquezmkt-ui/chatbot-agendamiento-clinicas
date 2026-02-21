@@ -111,10 +111,17 @@ export default function App() {
         }),
       });
       const data = await res.json();
+      console.log("RAW DATA:", JSON.stringify(data));
       const rawText = data.content?.[0]?.text || "{}";
+      console.log("RAW TEXT:", rawText);
       let parsed;
-      try { parsed = JSON.parse(rawText.replace(/```json|```/g, "").trim()); }
-      catch { parsed = { action: "chat", resumen: rawText }; }
+      try {
+        parsed = JSON.parse(rawText.replace(/```json|```/g, "").trim());
+        console.log("PARSED:", JSON.stringify(parsed));
+      } catch(err) {
+        console.log("PARSE ERROR:", err.message);
+        parsed = { action: "chat", resumen: rawText };
+      }
 
       if (parsed.action === "confirm" && parsed.data) {
         setPendingData(parsed.data);
