@@ -56,21 +56,35 @@ export default function App() {
     setMessages(prev => [...prev, { role, text, type, id: Date.now() + Math.random() }]);
   };
 
-  const startListening = () => {
+  const toggleListening = () => {
+    if (listening) {
+      recognitionRef.current?.stop();
+      setListening(false);
+      return;
+    }
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) { alert("Tu navegador no soporta reconocimiento de voz. Usa Chrome."); return; }
     const r = recognitionRef.current = new SR();
     r.lang = "es-MX";
-    r.continuous = false;
-    r.interimResults = false;
+    r.continuous = true;
+    r.interimResults = true;
     r.onstart = () => setListening(true);
-    r.onresult = e => { setInput(e.results[0][0].transcript); setListening(false); };
+    r.onresult = e => {
+      let interim = "", final = "";
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        if (e.results[i].isFinal) final += e.results[i][0].transcript;
+        else interim += e.results[i][0].transcript;
+      }
+      setInput(prev => (prev + final) || interim);
+    };
+    r.onspeechend = () => {
+      r.stop();
+      setListening(false);
+    };
     r.onerror = () => setListening(false);
     r.onend = () => setListening(false);
     r.start();
   };
-
-  const stopListening = () => { recognitionRef.current?.stop(); setListening(false); };
 
   const sendToSheets = async (data, clinic) => {
     if (!clinic.url) return false;
@@ -299,13 +313,12 @@ export default function App() {
       </div>
 
       <div style={{ background: "white", padding: "12px 16px", borderTop: "1px solid #e2e8f0", display: "flex", gap: 10, alignItems: "center" }}>
-        <button
-          onMouseDown={startListening} onMouseUp={stopListening}
-          onTouchStart={startListening} onTouchEnd={stopListening}
+        <button onClick={toggleListening}
           style={{
             width: 44, height: 44, borderRadius: "50%", border: "none", cursor: "pointer", fontSize: 20, flexShrink: 0,
             background: listening ? "linear-gradient(135deg,#ef4444,#dc2626)" : "linear-gradient(135deg,#3b82f6,#1d4ed8)",
-            color: "white", boxShadow: listening ? "0 0 0 6px rgba(239,68,68,.25)" : "none", transition: "all .2s"
+            color: "white", boxShadow: listening ? "0 0 0 6px rgba(239,68,68,.25)" : "none", transition: "all .2s",
+            animation: listening ? "pulse 1.2s infinite" : "none"
           }}>
           {listening ? "⏹" : "🎙"}
         </button>
@@ -323,7 +336,10 @@ export default function App() {
           ➤
         </button>
       </div>
-      <style>{`@keyframes bounce { 0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)} }`}</style>
+      <style>{`
+        @keyframes bounce { 0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)} }
+        @keyframes pulse { 0%,100%{box-shadow:0 0 0 4px rgba(239,68,68,.3)}50%{box-shadow:0 0 0 10px rgba(239,68,68,.1)} }
+      `}</style>
     </div>
   );
 }
