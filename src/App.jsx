@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 
-const API_KEY = import.meta.env.VITE_ANTHROPIC_API_KEY;
+
 
 const SYSTEM_PROMPT = `Eres un asistente virtual de agendamiento médico. Tu única función es ayudar a agendar pacientes extrayendo datos de los mensajes.
 
