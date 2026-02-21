@@ -335,7 +335,7 @@ export default function App() {
               lineHeight: 1.5, padding: "4px 0", maxHeight: 120, overflowY: "auto"
             }}
           />
-          <div style={{ display: "flex", gap: 6", alignItems: "center" }}>
+          <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
             <button onClick={toggleListening} style={{
               width: 36, height: 36, borderRadius: 10, border: "none", cursor: "pointer",
               background: listening ? "#ef4444" : "#e5e5e5", color: listening ? "white" : "#666",
