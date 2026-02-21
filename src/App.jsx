@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 
+const API_KEY = import.meta.env.VITE_ANTHROPIC_API_KEY;
+
 const SYSTEM_PROMPT = `Eres un asistente virtual de agendamiento médico. Tu única función es ayudar a agendar pacientes extrayendo datos de los mensajes.
 
 Cuando el usuario te dé información de un paciente, SIEMPRE responde ÚNICAMENTE con un JSON válido en este formato exacto:
@@ -112,9 +114,14 @@ export default function App() {
     try {
       const res = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": API_KEY,
+          "anthropic-version": "2023-06-01",
+          "anthropic-dangerous-request-bypass": "true",
+        },
         body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
+          model: "claude-haiku-4-5-20251001",
           max_tokens: 1000,
           system: SYSTEM_PROMPT,
           messages: history,
@@ -175,7 +182,6 @@ export default function App() {
   const updateClinicUrl = (id, url) =>
     setClinics(prev => prev.map(c => c.id === id ? { ...c, url } : c));
 
-  // SETUP VIEW
   if (view === "setup") return (
     <div style={{ minHeight: "100vh", background: "linear-gradient(135deg,#0f172a,#1e3a5f)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "system-ui,sans-serif", padding: 20 }}>
       <div style={{ background: "white", borderRadius: 20, padding: 40, maxWidth: 480, width: "100%", boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}>
@@ -236,10 +242,8 @@ export default function App() {
     </div>
   );
 
-  // CHAT VIEW
   return (
     <div style={{ height: "100vh", display: "flex", flexDirection: "column", background: "#f1f5f9", fontFamily: "system-ui,sans-serif" }}>
-      {/* Header */}
       <div style={{ background: "linear-gradient(90deg,#1e40af,#3b82f6)", padding: "12px 20px", display: "flex", alignItems: "center", gap: 12, boxShadow: "0 2px 8px rgba(0,0,0,.2)" }}>
         <button onClick={() => setView("setup")}
           style={{ background: "rgba(255,255,255,.2)", border: "none", color: "white", borderRadius: 8, padding: "6px 10px", cursor: "pointer", fontSize: 16 }}>←</button>
@@ -252,7 +256,6 @@ export default function App() {
         </div>
       </div>
 
-      {/* Messages */}
       <div style={{ flex: 1, overflowY: "auto", padding: "20px 16px", display: "flex", flexDirection: "column", gap: 12 }}>
         {messages.map(m => (
           <div key={m.id} style={{ display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start" }}>
@@ -271,7 +274,6 @@ export default function App() {
                 {m.text}
               </div>
 
-              {/* Confirm card */}
               {m.type === "confirm" && m.data && pendingData && (
                 <div style={{ background: "#f0fdf4", border: "1px solid #86efac", borderRadius: 12, padding: 14, marginTop: 8 }}>
                   <p style={{ margin: "0 0 10px", fontWeight: 600, color: "#166534", fontSize: 13 }}>📋 Confirmar cita:</p>
@@ -306,7 +308,6 @@ export default function App() {
         <div ref={messagesEnd} />
       </div>
 
-      {/* Input */}
       <div style={{ background: "white", padding: "12px 16px", borderTop: "1px solid #e2e8f0", display: "flex", gap: 10, alignItems: "center" }}>
         <button
           onMouseDown={startListening} onMouseUp={stopListening}
